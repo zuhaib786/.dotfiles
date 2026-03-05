@@ -1,0 +1,175 @@
+local utils = require("akshettrj.utils")
+
+return {
+  {
+    "https://github.com/nvim-telescope/telescope.nvim",
+    enabled = function()
+      return not utils.is_inside_vscode()
+    end,
+    keys = {
+      {
+        "<leader>'",
+        function()
+          require("telescope.builtin").resume()
+        end,
+        silent = true,
+        desc = "Telescope Resume",
+      },
+      {
+        "<leader>gf",
+        function()
+          require("telescope.builtin").git_files({ show_untracked = true })
+        end,
+        silent = true,
+        desc = "Telescope Git files",
+      },
+      {
+        "<leader>f",
+        function()
+          require("telescope.builtin").find_files({ hidden = true })
+        end,
+        silent = true,
+        desc = "Telescope Find files",
+      },
+      {
+        "<leader>b",
+        function()
+          require("telescope.builtin").buffers()
+        end,
+        silent = true,
+        desc = "Telescope Buffers",
+      },
+      {
+        "<leader>j",
+        function()
+          require("telescope.builtin").jumplist()
+        end,
+        silent = true,
+        desc = "Telescope Jumplist",
+      },
+    },
+    cmd = "Telescope",
+    config = function()
+      require("telescope").setup({
+        defaults = {
+          file_ignore_patterns = {
+            "node_modules/.*",
+            "%.?venv/.*",
+            ".git/.*"
+          },
+          mappings = {
+            ["i"] = {
+              ["<C-h>"] = "which_key",
+            },
+          },
+        },
+      })
+    end,
+    dependencies = {
+      "https://github.com/nvim-lua/plenary.nvim",
+      "https://github.com/nvim-tree/nvim-web-devicons",
+    },
+  },
+
+  {
+    "https://github.com/nvim-telescope/telescope-dap.nvim",
+    enabled = function()
+      return not utils.is_inside_vscode()
+    end,
+    event = { "VeryLazy" },
+    config = function()
+      require("telescope").load_extension("dap")
+    end,
+    dependencies = {
+      "https://github.com/nvim-telescope/telescope.nvim",
+      "https://github.com/mfussenegger/nvim-dap",
+    },
+  },
+
+  {
+    "https://github.com/nvim-telescope/telescope-file-browser.nvim",
+    enabled = function()
+      return not utils.is_inside_vscode()
+    end,
+    keys = {
+      {
+        "<leader>e",
+        function()
+          require("telescope").extensions.file_browser.file_browser()
+        end,
+        silent = true,
+        desc = "Telescope File Browser",
+      },
+    },
+    config = function()
+      require("telescope._extensions")._config["file_browser"] = {
+        hijack_netrw = true,
+      }
+      require("telescope").load_extension("file_browser")
+    end,
+    dependencies = {
+      "https://github.com/nvim-telescope/telescope.nvim",
+    },
+  },
+
+  {
+    "https://github.com/nvim-telescope/telescope-live-grep-args.nvim",
+    enabled = function()
+      return not utils.is_inside_vscode()
+    end,
+    keys = {
+      {
+        "<leader>/",
+        function()
+          require("telescope").extensions.live_grep_args.live_grep_args()
+        end,
+        silent = true,
+        desc = "Telescope Live Grep Args",
+      },
+    },
+    config = function()
+      require("telescope._extensions")._config["live_grep_args"] = {
+        auto_quoting = true,
+        mappings = {
+          ["i"] = {
+            ["<C-k>"] = require("telescope-live-grep-args.actions").quote_prompt(),
+          },
+        },
+      }
+      require("telescope").load_extension("live_grep_args")
+    end,
+    dependencies = {
+      "https://github.com/nvim-telescope/telescope.nvim",
+    },
+  },
+  {
+    "https://github.com/ThePrimeagen/git-worktree.nvim",
+    enabled = function()
+      return not utils.is_inside_vscode()
+    end,
+    keys = {
+      {
+        "<leader>gw",
+        function()
+          require('telescope').extensions.git_worktree.git_worktrees()
+        end,
+        silent = true,
+        desc = "Telescope Git worktree switch/delete",
+      },
+      {
+        "<leader>gW",
+        function()
+          require('telescope').extensions.git_worktree.create_git_worktree()
+        end,
+        silent = true,
+        desc = "Telescope Git worktree create",
+      },
+    },
+    config = function()
+      require("telescope").load_extension("git_worktree")
+    end,
+    dependencies = {
+      "https://github.com/nvim-telescope/telescope.nvim",
+    },
+  },
+}
