@@ -11,6 +11,7 @@ require("zuhaib.opts")
 require("zuhaib.commands")
 require("zuhaib.lazy")
 require("zuhaib.vscode")
+require("zuhaib.tmux")
 
 -- Picks the dark or light colorscheme above and follows ~/.local/bin/theme live
 require("zuhaib.theme").setup()
