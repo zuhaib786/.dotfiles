@@ -60,6 +60,11 @@ vim.api.nvim_create_autocmd("ColorScheme", {
   group = akshettrj_group,
   callback = function()
     vim.api.nvim_set_hl(0, "Normal", { bg = "NONE", ctermbg = "NONE" })
+    -- teal-night selection colours; the light theme keeps its own
+    if vim.o.background == "dark" then
+      vim.api.nvim_set_hl(0, "Visual", { fg = "#e4eef8", bg = "#1e3a52", bold = true })
+      vim.api.nvim_set_hl(0, "VisualNOS", { fg = "#c7d7e6", bg = "#16283a", bold = true })
+    end
 
     -- Fix statusline colors
     vim.api.nvim_set_hl(0, "StatusLine", {reverse = false})
@@ -80,5 +85,32 @@ vim.api.nvim_create_autocmd("InsertLeave", {
   group = akshettrj_group,
   callback = function()
     vim.opt.relativenumber = true
+  end,
+})
+
+local function set_tmux_status(visible)
+  if vim.env.TMUX == nil then
+    return
+  end
+
+  if visible then
+    vim.fn.system({ "tmux", "set-option", "status", "on" })
+    vim.fn.system({ "tmux", "run-shell", "-b", "sleep 0.1; tmux set-option status on" })
+  else
+    vim.fn.system({ "tmux", "set-option", "status", "off" })
+  end
+end
+
+vim.api.nvim_create_autocmd({ "VimEnter", "FocusGained" }, {
+  group = akshettrj_group,
+  callback = function()
+    set_tmux_status(false)
+  end,
+})
+
+vim.api.nvim_create_autocmd({ "VimLeavePre", "VimLeave", "FocusLost" }, {
+  group = akshettrj_group,
+  callback = function()
+    set_tmux_status(true)
   end,
 })

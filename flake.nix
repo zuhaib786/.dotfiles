@@ -19,6 +19,8 @@
     devShell = pkgs.mkShell {
       name = "nvim-config-dev";
       nativeBuildInputs = with pkgs; [
+        zig
+        zls
         lua-language-server
         tree-sitter
       ];

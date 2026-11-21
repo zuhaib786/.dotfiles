@@ -114,7 +114,7 @@ return {
         capabilities = capabilities,
         on_attach = on_attach,
         cmd = {
-          "clangd",
+          "/opt/homebrew/opt/llvm/bin/clangd",
           "--background-index",
           "--cross-file-rename",
           "--clang-tidy",
@@ -125,6 +125,7 @@ return {
           "--limit-references=0",
           "--limit-results=0",
           "--rename-file-limit=0",
+          "--query-driver=/opt/homebrew/bin/g++-15",
         },
       }
       vim.lsp.enable("clangd")
@@ -239,6 +240,46 @@ return {
         },
       }
       vim.lsp.enable("gopls")
+
+      vim.lsp.config.zls = {
+        capabilities = capabilities,
+        on_attach = on_attach,
+        cmd = { "zls" },
+        filetypes = { "zig", "zir" },
+        root_markers = { "build.zig", "build.zig.zon", "zls.json", ".git" },
+      }
+      vim.lsp.enable("zls")
+
+      -- jdtls itself requires JDK 21+ to run, but the projects it serves target
+      -- JDK 11, so run the server on the newest JDK and declare 11 as the
+      -- project runtime. Paths are the stable Homebrew opt/ symlinks.
+      local jdtls_server_jdk = "/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home"
+      local jdk11 = "/opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk/Contents/Home"
+
+      -- Keep the server's heap modest; jdtls defaults are larger than needed here.
+      vim.env.JDTLS_JVM_ARGS = "-Xms128m -Xmx768m"
+
+      vim.lsp.config.jdtls = {
+        capabilities = capabilities,
+        on_attach = on_attach,
+        cmd_env = { JAVA_HOME = jdtls_server_jdk },
+        settings = {
+          java = {
+            configuration = {
+              runtimes = {
+                { name = "JavaSE-11", path = jdk11, default = true },
+              },
+            },
+            eclipse = { downloadSources = true },
+            maven = { downloadSources = true },
+            -- Code lenses re-resolve on every change; the hover/gr equivalents suffice.
+            implementationsCodeLens = { enabled = false },
+            referencesCodeLens = { enabled = false },
+            inlayHints = { parameterNames = { enabled = "literals" } },
+          },
+        },
+      }
+      vim.lsp.enable("jdtls")
 
       vim.lsp.config.lua_ls = {
         capabilities = capabilities,

@@ -65,3 +65,6 @@ vim.keymap.set("n", "[q", "<CMD>cprev<CR>")
 
 -- Shift + Space sometimes. Very annoying
 vim.keymap.set("t", "<S-Space>", "<Space>")
+
+-- Clear search highlight
+vim.keymap.set("n", "<Leader>nh", "<CMD>nohlsearch<CR>", opts)
