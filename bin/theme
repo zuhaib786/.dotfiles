@@ -1,0 +1,122 @@
+#!/bin/bash
+# theme — switch kitty, tmux, neovim and Claude Code between light and dark.
+#
+#   theme toggle       flip light <-> dark                    (kitty: cmd+shift+l)
+#   theme light|dark   force a mode
+#   theme auto         follow the sun right now (day -> light, night -> dark)
+#   theme status       show the current mode and the sun phase
+#   theme schedule     run by launchd every 2 minutes. Switches only when the sun
+#                      phase changes (sunrise/sunset), so a manual toggle holds
+#                      until the next sunrise or sunset.
+#
+# What follows the switch:
+#   kitty    ~/.config/kitty/current-theme.conf is rewritten, then kitty reloads (SIGUSR1)
+#   tmux     ~/.config/tmux/theme-<mode>.conf is sourced into the running server
+#   neovim   watches ~/.local/state/theme/mode    (~/.config/nvim/lua/zuhaib/theme.lua)
+#   claude   "theme": "auto" in ~/.claude/settings.json follows the terminal background
+#
+# Sunrise/sunset come from macOS (the same data Night Shift uses), so they match
+# your location. If macOS can't tell, the FALLBACK_* hours below are used.
+
+set -euo pipefail
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+LIGHT_KITTY="dayfox.conf"
+DARK_KITTY="teal-night.conf"
+FALLBACK_DAY_START=0700   # HHMM
+FALLBACK_NIGHT_START=1800 # HHMM
+
+STATE_DIR="$HOME/.local/state/theme"
+MODE_FILE="$STATE_DIR/mode"
+SUN_FILE="$STATE_DIR/last-sun-phase"
+LOG_FILE="$STATE_DIR/theme.log"
+KITTY_DIR="$HOME/.config/kitty"
+TMUX_DIR="$HOME/.config/tmux"
+
+mkdir -p "$STATE_DIR"
+
+log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >>"$LOG_FILE"; }
+
+current_mode() {
+	local m
+	m=$(cat "$MODE_FILE" 2>/dev/null || true)
+	if [[ $m == light ]]; then echo light; else echo dark; fi
+}
+
+# Prints "light" during daytime and "dark" at night.
+sun_phase() {
+	local daylight now
+	daylight=$(/usr/libexec/corebrightnessdiag nightshift-internal 2>/dev/null |
+		awk '/isDaylight/ { gsub(/[^0-9]/, "", $3); print $3; exit }' || true)
+	case "$daylight" in
+	1) echo light ;;
+	0) echo dark ;;
+	*)
+		now=$(date +%H%M)
+		if ((10#$now >= 10#$FALLBACK_DAY_START && 10#$now < 10#$FALLBACK_NIGHT_START)); then
+			echo light
+		else
+			echo dark
+		fi
+		;;
+	esac
+}
+
+apply() {
+	local mode=$1 kitty_theme
+	if [[ $mode == light ]]; then kitty_theme=$LIGHT_KITTY; else kitty_theme=$DARK_KITTY; fi
+
+	# State file first: running neovim instances watch it.
+	printf '%s\n' "$mode" >"$MODE_FILE.tmp"
+	mv "$MODE_FILE.tmp" "$MODE_FILE"
+
+	# kitty: point current-theme.conf at the theme, then reload every kitty instance.
+	printf '# Managed by ~/.local/bin/theme (light: %s, dark: %s)\ninclude %s\n' \
+		"$LIGHT_KITTY" "$DARK_KITTY" "$kitty_theme" >"$KITTY_DIR/current-theme.conf"
+	pkill -USR1 -x kitty 2>/dev/null || true
+
+	# tmux: recolour the running server, if any.
+	if tmux list-sessions >/dev/null 2>&1; then
+		tmux source-file "$TMUX_DIR/theme-$mode.conf" || true
+	fi
+}
+
+cmd=${1:-toggle}
+case "$cmd" in
+light | dark)
+	apply "$cmd"
+	;;
+toggle)
+	if [[ $(current_mode) == light ]]; then apply dark; else apply light; fi
+	;;
+auto)
+	phase=$(sun_phase)
+	printf '%s\n' "$phase" >"$SUN_FILE"
+	apply "$phase"
+	;;
+schedule)
+	phase=$(sun_phase)
+	last=$(cat "$SUN_FILE" 2>/dev/null || true)
+	if [[ $phase != "$last" ]]; then
+		printf '%s\n' "$phase" >"$SUN_FILE"
+		log "sun phase ${last:-unknown} -> $phase, applying $phase"
+		apply "$phase"
+	fi
+	;;
+status)
+	echo "mode:      $(current_mode)"
+	echo "sun phase: $(sun_phase)"
+	/usr/libexec/corebrightnessdiag nightshift-internal 2>/dev/null |
+		awk -F' = ' '/^ *(sunrise|sunset) =/ { gsub(/[";]/, "", $2); print $1 ": " $2 }' |
+		while IFS=': ' read -r what when; do
+			echo "$what:$(printf '%*s' $((10 - ${#what})) '')$(date -j -f '%Y-%m-%d %H:%M:%S %z' "$when" '+%H:%M' 2>/dev/null || echo "$when")"
+		done
+	;;
+-h | --help | help)
+	sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'
+	;;
+*)
+	echo "usage: theme [toggle|light|dark|auto|status|schedule]" >&2
+	exit 2
+	;;
+esac
