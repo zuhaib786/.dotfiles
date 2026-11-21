@@ -1,4 +1,4 @@
-local utils = require("akshettrj.utils")
+local utils = require("zuhaib.utils")
 
 local opts = { silent = true }
 

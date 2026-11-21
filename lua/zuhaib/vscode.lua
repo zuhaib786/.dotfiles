@@ -1,4 +1,4 @@
-local utils = require("akshettrj.utils")
+local utils = require("zuhaib.utils")
 local has_vscode, vscode = pcall(require, "vscode")
 
 if not has_vscode then

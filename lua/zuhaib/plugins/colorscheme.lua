@@ -1,4 +1,4 @@
-require("akshettrj.utils")
+require("zuhaib.utils")
 
 return {
   {
@@ -53,7 +53,7 @@ return {
     },
   },
   {
-    -- provides "dayfox", the light colorscheme (see lua/akshettrj/theme.lua)
+    -- provides "dayfox", the light colorscheme (see lua/zuhaib/theme.lua)
     "https://github.com/EdenEast/nightfox.nvim",
     priority = 1000,
     lazy = true,

@@ -1,4 +1,4 @@
-require("akshettrj.utils")
+require("zuhaib.utils")
 
 local hostname = vim.fn.hostname()
 if hostname:startswith("akshettrai.jindal") then

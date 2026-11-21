@@ -1,4 +1,4 @@
-local utils = require("akshettrj.utils")
+local utils = require("zuhaib.utils")
 
 local palettes = {
   dark = {
@@ -96,8 +96,8 @@ local function buffer_count()
 end
 
 local symbol_cache = {}
-local symbol_group = vim.api.nvim_create_augroup("akshettrj_lualine_symbols", { clear = true })
-local key_namespace = vim.api.nvim_create_namespace("akshettrj_lualine_keys")
+local symbol_group = vim.api.nvim_create_augroup("zuhaib_lualine_symbols", { clear = true })
+local key_namespace = vim.api.nvim_create_namespace("zuhaib_lualine_keys")
 local key_state = {
   text = "",
   last = 0,
@@ -556,9 +556,9 @@ spec = {
   config = function(_, opts)
     local lualine = require("lualine")
     lualine.setup(opts)
-    -- Rebuild colours when the light/dark theme switches (lua/akshettrj/theme.lua)
+    -- Rebuild colours when the light/dark theme switches (lua/zuhaib/theme.lua)
     vim.api.nvim_create_autocmd("ColorScheme", {
-      group = vim.api.nvim_create_augroup("akshettrj_lualine_theme", { clear = true }),
+      group = vim.api.nvim_create_augroup("zuhaib_lualine_theme", { clear = true }),
       callback = function()
         set_palette()
         lualine.setup(spec.opts())

@@ -7,8 +7,8 @@
 local M = {}
 
 M.schemes = {
-  dark = vim.g.akshettrj_colorscheme or "cyberdream",
-  light = vim.g.akshettrj_colorscheme_light or "dayfox",
+  dark = vim.g.zuhaib_colorscheme or "cyberdream",
+  light = vim.g.zuhaib_colorscheme_light or "dayfox",
 }
 
 local state_dir = vim.fn.expand("~/.local/state/theme")
@@ -71,7 +71,7 @@ function M.setup()
   M.watch()
   -- Fallback in case a file event was missed (e.g. after sleep).
   vim.api.nvim_create_autocmd("FocusGained", {
-    group = vim.api.nvim_create_augroup("akshettrj_theme", { clear = true }),
+    group = vim.api.nvim_create_augroup("zuhaib_theme", { clear = true }),
     callback = function()
       M.apply()
     end,

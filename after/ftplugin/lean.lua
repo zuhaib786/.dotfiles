@@ -1,5 +1,5 @@
 -- lean.nvim starts its own LSP client, so it never goes through the shared
--- on_attach in lua/akshettrj/plugins/lsp.lua. Re-bind the same navigation keys
+-- on_attach in lua/zuhaib/plugins/lsp.lua. Re-bind the same navigation keys
 -- here so Lean buffers behave like every other LSP buffer.
 local map = function(lhs, rhs, desc)
   vim.keymap.set("n", lhs, rhs, { buffer = 0, silent = true, desc = "[LSP] " .. desc })

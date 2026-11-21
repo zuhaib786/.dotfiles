@@ -1,4 +1,4 @@
-local utils = require("akshettrj.utils")
+local utils = require("zuhaib.utils")
 
 return {
   "https://github.com/rcarriga/nvim-notify",
